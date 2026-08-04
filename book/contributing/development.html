@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Local Development - arc documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">arc documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/MKonovalov/arc-evolve" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!-- generated-by: gsd-doc-writer -->
+<h1 id="local-development"><a class="header" href="#local-development">Local Development</a></h1>
+<p>This page is for a human contributor building and testing arc <strong>locally</strong> — not for the automated evolution loop (<code>scripts/evolve.sh</code>), which runs unattended in CI. If you're looking for how arc modifies its own source hourly, see the <a href="../architecture.html">Architecture Overview</a> instead.</p>
+<h2 id="build--test-commands"><a class="header" href="#build--test-commands">Build &amp; test commands</a></h2>
+<p>Run these from the project root:</p>
+<pre><code class="language-bash">cargo build              # Build
+cargo test                # Run tests
+cargo clippy --all-targets -- -D warnings   # Lint (CI treats warnings as errors)
+cargo fmt -- --check      # Format check
+cargo fmt                 # Auto-format
+</code></pre>
+<p>CI runs all four checks (build, test, clippy with <code>-D warnings</code>, fmt check) on every PR to <code>main</code>. Run them locally before pushing — a clippy warning that's harmless on your machine will fail CI.</p>
+<h2 id="running-the-agent-interactively"><a class="header" href="#running-the-agent-interactively">Running the agent interactively</a></h2>
+<p>To manually exercise the agent while you work on a change, run it with your own API key:</p>
+<pre><code class="language-bash">ANTHROPIC_API_KEY=sk-... cargo run
+</code></pre>
+<p>Pass flags after <code>--</code> to override the model or point at a local skills directory:</p>
+<pre><code class="language-bash">ANTHROPIC_API_KEY=sk-... cargo run -- --model claude-opus-4-6 --skills ./skills
+</code></pre>
+<p>This starts the same interactive REPL a real user gets — useful for checking that a change to <code>repl.rs</code>, <code>commands.rs</code>, <code>prompt.rs</code>, or the tool set behaves correctly before you commit.</p>
+<p>If you want to test the full unattended evolution pipeline (planning → implementation → response) rather than just the interactive agent, see <code>scripts/evolve.sh</code>:</p>
+<pre><code class="language-bash">ANTHROPIC_API_KEY=sk-... ./scripts/evolve.sh
+</code></pre>
+<p>Note that <code>scripts/evolve.sh</code> itself is on the protected-file list (see <a href="#gotchas-that-matter-when-changing-code">Gotchas</a> below) — you can run it, but you cannot modify it as part of an evolution session.</p>
+<h2 id="source-layout"><a class="header" href="#source-layout">Source layout</a></h2>
+<p>arc's source is split across roughly a dozen files under <code>src/</code>, each with a distinct responsibility (CLI parsing, REPL loop, tool wrappers, formatting, hooks, safety checks, etc.). Rather than duplicate that map here, see the <a href="../architecture.html">Architecture Overview</a> for the full module-by-module breakdown and the reasoning behind the split.</p>
+<h2 id="gotchas-that-matter-when-changing-code"><a class="header" href="#gotchas-that-matter-when-changing-code">Gotchas that matter when changing code</a></h2>
+<p>These are hard rules enforced by the <code>evolve</code> skill and <code>scripts/evolve.sh</code> during automated sessions, and they apply equally to hand-written PRs:</p>
+<ul>
+<li>
+<p><strong>Protected files.</strong> Never modify <code>IDENTITY.md</code>, <code>PERSONALITY.md</code>, <code>ECONOMICS.md</code>, <code>scripts/evolve.sh</code>, <code>scripts/format_issues.py</code>, <code>scripts/build_site.py</code>, or anything under <code>.github/workflows/</code>.</p>
+</li>
+<li>
+<p><strong>Every code change must pass <code>cargo build &amp;&amp; cargo test</code>.</strong> If a change breaks the build, the automated loop reverts with <code>git checkout -- src/ Cargo.toml Cargo.lock</code> — treat this as the bar for any manual change too.</p>
+</li>
+<li>
+<p><strong>Never delete existing tests.</strong></p>
+</li>
+<li>
+<p><strong>Write tests before adding features.</strong></p>
+</li>
+<li>
+<p><strong>Never use byte indexing on strings.</strong> <code>s[..n]</code>, <code>s.truncate(n)</code>, and <code>s.split_at(n)</code> panic if <code>n</code> falls inside a multi-byte UTF-8 character. Use <code>is_char_boundary()</code> to find a safe boundary first:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// BAD: panics on multi-byte chars like ✓ (3 bytes)
+acc.truncate(max_bytes);
+// GOOD: find nearest char boundary
+let mut b = max_bytes;
+while b &gt; 0 &amp;&amp; !acc.is_char_boundary(b) { b -= 1; }
+acc.truncate(b);
+<span class="boring">}</span></code></pre></pre>
+<p>This isn't a style nitpick — it caused real planning-agent crashes in production (see issue #250 in the project history). Any code that truncates or slices a <code>String</code> by byte offset needs this guard.</p>
+</li>
+<li>
+<p><strong><code>run_git()</code> has a <code>#[cfg(test)]</code> destructive-command guard.</strong> During <code>cargo test</code>, calling <code>run_git()</code> with a destructive subcommand (commit, revert, reset, push, checkout, etc.) from the project root panics. This exists because tests that ran real destructive git operations against the actual repo once caused a multi-session deadlock. If a test needs to exercise destructive git behavior, run it against a temp directory instead of the project root.</p>
+</li>
+</ul>
+<h2 id="product-vs-evolve-surface"><a class="header" href="#product-vs-evolve-surface">Product vs. evolve surface</a></h2>
+<p>Before writing a change, decide which of arc's two audiences it's for:</p>
+<ul>
+<li><strong>product</strong> — people who install arc and use it on their own projects (any language, any setup, no CI). Defaults, CLI flags, the setup wizard, and startup behavior must be safe for all of them.</li>
+<li><strong>evolve</strong> — arc's own evolution loop, always running against this Rust repo in CI. Conveniences built for this loop are fine, but they must be opt-in the moment they touch anything a product user would see.</li>
+</ul>
+<p>Getting this wrong is a real failure mode: a convenience built for the evolve loop (auto-watch) once shipped as a product default and broke non-Rust users (issue #448). See the <a href="https://github.com/MKonovalov/arc-evolve/blob/main/CLAUDE.md#two-audiences-product-vs-evolve">"Two Audiences: product vs evolve"</a> section of <code>CLAUDE.md</code> for the full rule and how the automated evaluator enforces it on evolve-generated changes.</p>
+<h2 id="building-the-docs-locally"><a class="header" href="#building-the-docs-locally">Building the docs locally</a></h2>
+<p>This mdBook site lives under <code>docs/</code>: source pages in <code>docs/src/</code>, configuration in <code>docs/book.toml</code>. Output is written to <code>site/book/</code> (gitignored) relative to the project root, per the <code>build-dir</code> setting in <code>docs/book.toml</code>.</p>
+<p>To build it locally, <a href="https://rust-lang.github.io/mdBook/guide/installation.html">install mdBook</a> and run, from the project root:</p>
+<pre><code class="language-bash">mdbook build docs/
+</code></pre>
+<p>Or, to preview changes live while editing:</p>
+<pre><code class="language-bash">mdbook serve docs/
+</code></pre>
+<p>New pages need an entry in <code>docs/src/SUMMARY.md</code> to appear in the sidebar. The docs site is built and deployed by the Pages GitHub Actions workflow (<code>.github/workflows/pages.yml</code>) on push to <code>main</code> — it is not part of the hourly evolution loop.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../guides/fork.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../contributing/testing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../guides/fork.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../contributing/testing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
