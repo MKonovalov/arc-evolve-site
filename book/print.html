@@ -419,6 +419,7 @@ cargo run
 </code></pre>
 <ul>
 <li>Bare <code>!?</code> uses a default question: after a failure, "explain what went wrong and how to fix it"; after a success, "summarize this output".</li>
+<li>When the command ran somewhere other than the obvious place, <code>!?</code> also notes the working directory (a <code>(ran in: &lt;dir&gt;)</code> line) — for example after <code>!cd src &amp;&amp; make</code>, so arc doesn't misframe relative paths. The line is omitted when no directory can be resolved.</li>
 <li><code>!? &lt;question&gt;</code> asks your own question about the output.</li>
 <li>Works after successful commands too (the failure hint just doesn't appear).</li>
 <li>If no <code>!</code> command has run yet, <code>!?</code> prints a one-liner and does nothing.</li>
