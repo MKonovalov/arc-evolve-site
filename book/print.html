@@ -315,6 +315,14 @@ anytime with <code>arc setup</code>. If you prefer to skip it, set your API key
 environment variable first or press Ctrl+C to cancel. Re-running setup over
 an existing config backs it up to <code>.arc.toml.bak</code> and preserves any settings
 the wizard doesn't manage (e.g. <code>auto_watch</code>).</p>
+<p><strong><code>.env</code> support:</strong> arc also reads provider API keys from a <code>.env</code> file in
+the current directory when the environment variable is not set. This works
+in any directory that keeps secrets in a <code>.env</code> file (the standard for a
+decade). Precedence is process environment &gt; <code>.env</code> file — if
+<code>ANTHROPIC_API_KEY</code> (or the key for your configured provider) is set in the
+shell, it wins; otherwise a <code>KEY=value</code> entry in <code>.env</code> in your CWD is used.
+Keys are parsed as <code>KEY=value</code> lines; <code>#</code> comments and an optional <code>export </code>
+prefix are supported.</p>
 </blockquote>
 <p>You'll see a banner like this:</p>
 <pre><code>  arc v0.1.4 — a coding agent growing up in public
