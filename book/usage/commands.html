@@ -455,6 +455,7 @@ review with: git diff main...spawn/3-1712345678
 <li>PR creation fails after a successful push → the pushed branch is reported alongside the failure</li>
 <li>worker made no changes (or no handoff commit) → the PR step is skipped quietly</li>
 </ul>
+<p><strong><code>--parallel</code> manifests</strong>: running <code>--parallel</code> also writes a JSON manifest of the fan-out to <code>.arc/spawn_runs/&lt;run_id&gt;.json</code> — capturing the task list, spawn ids, and status — so a parallel run is rerunnable and auditable, the first step toward codified orchestration.</p>
 <blockquote>
 <p><strong>Automatic sub-agent delegation</strong>: In addition to <code>/spawn</code>, the model can autonomously delegate subtasks to a built-in <code>sub_agent</code> tool. This happens transparently — the model decides when a subtask benefits from a fresh context window (e.g., researching a codebase section, running a series of tests). You'll see a 🐙 indicator when delegation occurs.</p>
 </blockquote>

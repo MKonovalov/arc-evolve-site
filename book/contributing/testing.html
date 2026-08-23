@@ -272,6 +272,8 @@ for worktree tests.</li>
 causes flaky races against other tests running in parallel. Pass an
 explicit temp path to <code>run_git_in_dir()</code> (or a raw <code>Command</code> with
 <code>.current_dir(...)</code>) instead.</li>
+<li>Tests that exercise <code>.env</code>-file loading should use <code>load_dotenv_from(temp_dir)</code>,
+never <code>set_current_dir</code> — the pure directory-scoped form keeps tests hermetic.</li>
 </ul>
 <h2 id="never-delete-existing-tests"><a class="header" href="#never-delete-existing-tests">Never delete existing tests</a></h2>
 <p>CLAUDE.md's Safety Rules state tests must never be deleted. In practice,

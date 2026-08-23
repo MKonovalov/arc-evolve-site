@@ -873,6 +873,7 @@ review with: git diff main...spawn/3-1712345678
 <li>PR creation fails after a successful push → the pushed branch is reported alongside the failure</li>
 <li>worker made no changes (or no handoff commit) → the PR step is skipped quietly</li>
 </ul>
+<p><strong><code>--parallel</code> manifests</strong>: running <code>--parallel</code> also writes a JSON manifest of the fan-out to <code>.arc/spawn_runs/&lt;run_id&gt;.json</code> — capturing the task list, spawn ids, and status — so a parallel run is rerunnable and auditable, the first step toward codified orchestration.</p>
 <blockquote>
 <p><strong>Automatic sub-agent delegation</strong>: In addition to <code>/spawn</code>, the model can autonomously delegate subtasks to a built-in <code>sub_agent</code> tool. This happens transparently — the model decides when a subtask benefits from a fresh context window (e.g., researching a codebase section, running a series of tests). You'll see a 🐙 indicator when delegation occurs.</p>
 </blockquote>
@@ -2805,6 +2806,8 @@ for worktree tests.</li>
 causes flaky races against other tests running in parallel. Pass an
 explicit temp path to <code>run_git_in_dir()</code> (or a raw <code>Command</code> with
 <code>.current_dir(...)</code>) instead.</li>
+<li>Tests that exercise <code>.env</code>-file loading should use <code>load_dotenv_from(temp_dir)</code>,
+never <code>set_current_dir</code> — the pure directory-scoped form keeps tests hermetic.</li>
 </ul>
 <h2 id="never-delete-existing-tests"><a class="header" href="#never-delete-existing-tests">Never delete existing tests</a></h2>
 <p>CLAUDE.md's Safety Rules state tests must never be deleted. In practice,
