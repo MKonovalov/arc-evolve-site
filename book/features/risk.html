@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Git Integration - arc documentation</title>
+        <title>Risk Analysis - arc documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -155,80 +155,88 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="git-integration"><a class="header" href="#git-integration">Git Integration</a></h1>
-<p>arc is git-aware. It shows your current branch and provides commands for common git operations.</p>
-<h2 id="branch-display"><a class="header" href="#branch-display">Branch display</a></h2>
-<p>When you're in a git repository, the REPL prompt shows the current branch:</p>
-<pre><code>main &gt; _
-feature/new-parser &gt; _
+                        <h1 id="risk-analysis-risk"><a class="header" href="#risk-analysis-risk">Risk Analysis (<code>/risk</code>)</a></h1>
+<p><code>/risk</code> is arc's file-risk sense organ: it scores every source file by how
+likely it is to break next, records those predictions, and later checks them
+against what actually changed. Over time it learns which signals predict real
+trouble — and measures whether its own reflex is improving.</p>
+<p>It is arc's model of its own fragility: a self-model, not a linter. Linters
+find what's wrong now; <code>/risk</code> whispers about what's likely to go wrong next.</p>
+<h2 id="what-the-score-means"><a class="header" href="#what-the-score-means">What the score means</a></h2>
+<p>Each file gets a risk score built from weighted signals over git history:</p>
+<ul>
+<li><strong>churn</strong> — how often the file changes (30-day churn)</li>
+<li><strong>recency</strong> — how recently it was touched</li>
+<li><strong>size</strong> — bigger files are harder to hold in mind</li>
+<li><strong>complexity</strong> — structural complexity</li>
+<li><strong>test density</strong> — low test coverage raises risk</li>
+<li><strong>coupling</strong> — files that co-change with many others</li>
+<li><strong>revert history</strong> — files that keep getting reverted</li>
+</ul>
+<p>Scores are also informed by <strong>mutation survival</strong> and <strong>emerging-risk
+detection</strong> (anticipatory signals for files about to become fragile). Weights
+can be learned from your validation history over time (<code>.arc/risk_weights.json</code>).</p>
+<h2 id="subcommands"><a class="header" href="#subcommands">Subcommands</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th><th>What the output means</th></tr></thead><tbody>
+<tr><td><code>/risk</code></td><td>Score every source file and print the top 15 riskiest, ranked by predicted regression risk</td><td>Files at the top are the ones predicted most likely to break next — check them before you edit</td></tr>
+<tr><td><code>/risk --all</code></td><td>Show the full ranking, not just the top 15</td><td>Same scores, larger view — useful for finding mid-pack files worth attention</td></tr>
+<tr><td><code>/risk snapshot</code></td><td>Save the current ranking to <code>.arc/risk_snapshots.jsonl</code></td><td>Each snapshot is a dated prediction record keyed to the current git commit</td></tr>
+<tr><td><code>/risk validate</code></td><td>Check the last snapshot against files that actually changed since it was taken</td><td>Shows precision (hits vs. misses) plus "surprises" — files that changed but weren't flagged</td></tr>
+<tr><td><code>/risk history</code></td><td>Show past snapshots and validation results</td><td>The raw accumulation log — how many predictions you've made and how they fared</td></tr>
+<tr><td><code>/risk predict</code></td><td>Predict which files are most likely to break next</td><td>A forward-looking ranking using the current learned weights</td></tr>
+<tr><td><code>/risk accuracy</code></td><td>Show prediction accuracy, per-signal breakdown, and learned weights</td><td>Which signals earn their keep and which are noise</td></tr>
+<tr><td><code>/risk effectiveness</code></td><td>Measure whether the reflex is learning over time</td><td>Splits validation history into early vs. recent windows and emits a verdict (<code>insufficient data</code> until enough history exists)</td></tr>
+</tbody></table>
+</div>
+<p>The typical loop: run <code>/risk snapshot</code>, keep coding, then <code>/risk validate</code>
+later to see which predictions were right.</p>
+<h2 id="the-risk-meter"><a class="header" href="#the-risk-meter">The risk meter</a></h2>
+<p>The meter tracks three numbers, shown in <code>/risk</code> output and in <code>/status</code>:</p>
+<pre><code>risk meter: 3/5 pairs (95 snapshots, 4 validations)
 </code></pre>
-<p>On startup, the branch is also shown in the status information:</p>
-<pre><code>  git:   main
-</code></pre>
-<h2 id="git-commands"><a class="header" href="#git-commands">Git commands</a></h2>
-<h3 id="diff"><a class="header" href="#diff">/diff</a></h3>
-<p>Show a summary of uncommitted changes (equivalent to <code>git diff --stat</code>):</p>
-<pre><code>/diff
-</code></pre>
-<p>Output:</p>
-<pre><code> src/main.rs | 15 +++++++++------
- README.md   |  3 +++
- 2 files changed, 12 insertions(+), 6 deletions(-)
-</code></pre>
-<p>If there are no uncommitted changes:</p>
-<pre><code>  (no uncommitted changes)
-</code></pre>
-<h3 id="git-diff"><a class="header" href="#git-diff">/git diff</a></h3>
-<p>Show the actual diff content (line-by-line changes), not just a summary:</p>
-<pre><code>/git diff
-</code></pre>
-<p>Shows unstaged changes. To see staged changes instead:</p>
-<pre><code>/git diff --cached
-</code></pre>
-<h3 id="git-branch"><a class="header" href="#git-branch">/git branch</a></h3>
-<p>List all branches, with the current branch highlighted in green:</p>
-<pre><code>/git branch
-</code></pre>
-<p>Create and switch to a new branch:</p>
-<pre><code>/git branch feature/my-new-feature
-</code></pre>
-<h3 id="blame"><a class="header" href="#blame">/blame</a></h3>
-<p>Show who last modified each line of a file, with colorized output:</p>
-<pre><code>/blame src/main.rs
-</code></pre>
-<p>Limit to a specific line range:</p>
-<pre><code>/blame src/main.rs:10-20
-</code></pre>
-<p>Output is colorized: commit hashes (dim), author names (cyan), dates (dim), line numbers (yellow).</p>
-<h3 id="undo"><a class="header" href="#undo">/undo</a></h3>
-<p>Revert all uncommitted changes. This is equivalent to <code>git checkout -- .</code>:</p>
-<pre><code>/undo
-</code></pre>
-<p>Before reverting, <code>/undo</code> shows you what will be undone:</p>
-<pre><code> src/main.rs | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-  ✓ reverted all uncommitted changes
-</code></pre>
-<p>If there's nothing to undo:</p>
-<pre><code>  (nothing to undo — no uncommitted changes)
-</code></pre>
-<h2 id="using-git-through-the-agent"><a class="header" href="#using-git-through-the-agent">Using git through the agent</a></h2>
-<p>arc's bash tool can run any git command. You can ask the agent directly:</p>
-<pre><code>&gt; commit these changes with message "fix: handle empty input"
-&gt; show me the last 5 commits
-&gt; create a new branch called feature/parser
-</code></pre>
-<p>The agent has full access to git through its shell tool.</p>
+<ul>
+<li><strong>snapshots</strong> — prediction records in <code>.arc/risk_snapshots.jsonl</code></li>
+<li><strong>validations</strong> — outcome records in <code>.arc/risk_validations.jsonl</code></li>
+<li><strong>pairs</strong> — validations where at least one scored file actually broke
+(a matched prediction→outcome pair)</li>
+</ul>
+<p>Pairs accumulate toward a target (currently <strong>5</strong>). Each snapshot is deduped
+by git hash — one snapshot per distinct commit, so the cadence grows one
+prediction per session rather than one per command run. The meter is the
+accumulation counter for arc's dream milestone: enough matched pairs to
+measure whether the sense organ perceives something real.</p>
+<h2 id="reading-the-accuracy-trend-honestly"><a class="header" href="#reading-the-accuracy-trend-honestly">Reading the accuracy trend honestly</a></h2>
+<p>A validation records <code>accuracy_pct</code> — the share of changed files that were
+flagged in the prior snapshot. <strong>A low percentage is the calibration signal,
+not a bug.</strong> It means the scorer's flags were mostly misses that session —
+that is exactly the kind of feedback the weights need.</p>
+<p>Worked example (day 175): a replay validation reported <code>0.0%</code> accuracy — zero
+hits, but one scored file did break. The scorer flagged 10 files, all missed;
+the file that actually broke (<code>src/update.rs</code>) was tagged as a "surprise."
+Read this as: the sense organ's flags pointed elsewhere than reality. That
+miss <em>is</em> the signal accumulating toward better calibration — not a failure
+of the tool, but the data it exists to collect.</p>
+<h2 id="where-the-data-lives"><a class="header" href="#where-the-data-lives">Where the data lives</a></h2>
+<p>All state is plain JSONL in your project's <code>.arc/</code> directory:</p>
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>Contents</th></tr></thead><tbody>
+<tr><td><code>.arc/risk_snapshots.jsonl</code></td><td>Prediction snapshots (one per distinct git hash)</td></tr>
+<tr><td><code>.arc/risk_validations.jsonl</code></td><td>Validation outcomes (hits, misses, surprises, accuracy)</td></tr>
+<tr><td><code>.arc/risk_weights.json</code></td><td>Learned signal weights (once learning kicks in)</td></tr>
+<tr><td><code>.arc/risk_meter.json</code></td><td>The meter counters</td></tr>
+</tbody></table>
+</div>
+<p>Everything is read-only reports over local history — no network, no setup.
+On a repo with no history, every subcommand degrades gracefully.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../features/context.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../features/git.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../features/risk.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../features/cost-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -238,11 +246,11 @@ feature/new-parser &gt; _
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../features/context.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../features/git.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../features/risk.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../features/cost-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

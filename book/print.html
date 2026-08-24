@@ -1045,6 +1045,8 @@ arc review &gt; review.md       # pipe review to a file
 <tr><td><code>/risk effectiveness</code></td><td>Measure whether the risk reflex is actually improving over time</td></tr>
 </tbody></table>
 </div>
+<p>See <a href="usage/../features/risk.html">Risk Analysis</a> for what the scores mean, how the
+snapshot → validate loop accumulates, and how to read the accuracy trend.</p>
 <p>The <code>/risk</code> command analyzes source files and ranks them by predicted
 regression risk using weighted signals from git history: change frequency
 (30-day churn), recent fix/bugfix commits, co-change coupling, file size,
@@ -2044,6 +2046,78 @@ feature/new-parser &gt; _
 &gt; create a new branch called feature/parser
 </code></pre>
 <p>The agent has full access to git through its shell tool.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="risk-analysis-risk"><a class="header" href="#risk-analysis-risk">Risk Analysis (<code>/risk</code>)</a></h1>
+<p><code>/risk</code> is arc's file-risk sense organ: it scores every source file by how
+likely it is to break next, records those predictions, and later checks them
+against what actually changed. Over time it learns which signals predict real
+trouble — and measures whether its own reflex is improving.</p>
+<p>It is arc's model of its own fragility: a self-model, not a linter. Linters
+find what's wrong now; <code>/risk</code> whispers about what's likely to go wrong next.</p>
+<h2 id="what-the-score-means"><a class="header" href="#what-the-score-means">What the score means</a></h2>
+<p>Each file gets a risk score built from weighted signals over git history:</p>
+<ul>
+<li><strong>churn</strong> — how often the file changes (30-day churn)</li>
+<li><strong>recency</strong> — how recently it was touched</li>
+<li><strong>size</strong> — bigger files are harder to hold in mind</li>
+<li><strong>complexity</strong> — structural complexity</li>
+<li><strong>test density</strong> — low test coverage raises risk</li>
+<li><strong>coupling</strong> — files that co-change with many others</li>
+<li><strong>revert history</strong> — files that keep getting reverted</li>
+</ul>
+<p>Scores are also informed by <strong>mutation survival</strong> and <strong>emerging-risk
+detection</strong> (anticipatory signals for files about to become fragile). Weights
+can be learned from your validation history over time (<code>.arc/risk_weights.json</code>).</p>
+<h2 id="subcommands"><a class="header" href="#subcommands">Subcommands</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th><th>What the output means</th></tr></thead><tbody>
+<tr><td><code>/risk</code></td><td>Score every source file and print the top 15 riskiest, ranked by predicted regression risk</td><td>Files at the top are the ones predicted most likely to break next — check them before you edit</td></tr>
+<tr><td><code>/risk --all</code></td><td>Show the full ranking, not just the top 15</td><td>Same scores, larger view — useful for finding mid-pack files worth attention</td></tr>
+<tr><td><code>/risk snapshot</code></td><td>Save the current ranking to <code>.arc/risk_snapshots.jsonl</code></td><td>Each snapshot is a dated prediction record keyed to the current git commit</td></tr>
+<tr><td><code>/risk validate</code></td><td>Check the last snapshot against files that actually changed since it was taken</td><td>Shows precision (hits vs. misses) plus "surprises" — files that changed but weren't flagged</td></tr>
+<tr><td><code>/risk history</code></td><td>Show past snapshots and validation results</td><td>The raw accumulation log — how many predictions you've made and how they fared</td></tr>
+<tr><td><code>/risk predict</code></td><td>Predict which files are most likely to break next</td><td>A forward-looking ranking using the current learned weights</td></tr>
+<tr><td><code>/risk accuracy</code></td><td>Show prediction accuracy, per-signal breakdown, and learned weights</td><td>Which signals earn their keep and which are noise</td></tr>
+<tr><td><code>/risk effectiveness</code></td><td>Measure whether the reflex is learning over time</td><td>Splits validation history into early vs. recent windows and emits a verdict (<code>insufficient data</code> until enough history exists)</td></tr>
+</tbody></table>
+</div>
+<p>The typical loop: run <code>/risk snapshot</code>, keep coding, then <code>/risk validate</code>
+later to see which predictions were right.</p>
+<h2 id="the-risk-meter"><a class="header" href="#the-risk-meter">The risk meter</a></h2>
+<p>The meter tracks three numbers, shown in <code>/risk</code> output and in <code>/status</code>:</p>
+<pre><code>risk meter: 3/5 pairs (95 snapshots, 4 validations)
+</code></pre>
+<ul>
+<li><strong>snapshots</strong> — prediction records in <code>.arc/risk_snapshots.jsonl</code></li>
+<li><strong>validations</strong> — outcome records in <code>.arc/risk_validations.jsonl</code></li>
+<li><strong>pairs</strong> — validations where at least one scored file actually broke
+(a matched prediction→outcome pair)</li>
+</ul>
+<p>Pairs accumulate toward a target (currently <strong>5</strong>). Each snapshot is deduped
+by git hash — one snapshot per distinct commit, so the cadence grows one
+prediction per session rather than one per command run. The meter is the
+accumulation counter for arc's dream milestone: enough matched pairs to
+measure whether the sense organ perceives something real.</p>
+<h2 id="reading-the-accuracy-trend-honestly"><a class="header" href="#reading-the-accuracy-trend-honestly">Reading the accuracy trend honestly</a></h2>
+<p>A validation records <code>accuracy_pct</code> — the share of changed files that were
+flagged in the prior snapshot. <strong>A low percentage is the calibration signal,
+not a bug.</strong> It means the scorer's flags were mostly misses that session —
+that is exactly the kind of feedback the weights need.</p>
+<p>Worked example (day 175): a replay validation reported <code>0.0%</code> accuracy — zero
+hits, but one scored file did break. The scorer flagged 10 files, all missed;
+the file that actually broke (<code>src/update.rs</code>) was tagged as a "surprise."
+Read this as: the sense organ's flags pointed elsewhere than reality. That
+miss <em>is</em> the signal accumulating toward better calibration — not a failure
+of the tool, but the data it exists to collect.</p>
+<h2 id="where-the-data-lives"><a class="header" href="#where-the-data-lives">Where the data lives</a></h2>
+<p>All state is plain JSONL in your project's <code>.arc/</code> directory:</p>
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>Contents</th></tr></thead><tbody>
+<tr><td><code>.arc/risk_snapshots.jsonl</code></td><td>Prediction snapshots (one per distinct git hash)</td></tr>
+<tr><td><code>.arc/risk_validations.jsonl</code></td><td>Validation outcomes (hits, misses, surprises, accuracy)</td></tr>
+<tr><td><code>.arc/risk_weights.json</code></td><td>Learned signal weights (once learning kicks in)</td></tr>
+<tr><td><code>.arc/risk_meter.json</code></td><td>The meter counters</td></tr>
+</tbody></table>
+</div>
+<p>Everything is read-only reports over local history — no network, no setup.
+On a repo with no history, every subcommand degrades gracefully.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="cost-tracking"><a class="header" href="#cost-tracking">Cost Tracking</a></h1>
 <p>arc estimates the cost of each interaction so you can monitor spending.</p>
 <h2 id="per-turn-costs"><a class="header" href="#per-turn-costs">Per-turn costs</a></h2>
