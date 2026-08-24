@@ -1023,6 +1023,17 @@ review with: git diff main...spawn/3-1712345678
 /review src/main.rs  # review a specific file
 /review Cargo.toml   # review any file
 </code></pre>
+<p>Effort is a switch, and it can be given as a flag or a natural word:</p>
+<pre><code>/review --quick           # bugs &amp; security only
+/review quick src/main.rs # same, positional word
+/review deep src/main.rs  # exhaustive review
+/review thorough HEAD~3..HEAD
+</code></pre>
+<p>Accepted effort words: <code>quick</code>/<code>fast</code>/<code>light</code> (Quick), <code>normal</code> (default),
+<code>thorough</code>/<code>deep</code>/<code>full</code> (Thorough). A path is never eaten as an effort —
+unknown words are treated as review targets, and a bare <code>/review</code> prints a
+dim hint (<code>review effort: --quick | --normal | --thorough (default: normal)</code>)
+when no effort is given.</p>
 <h3 id="non-interactive-review-cli-subcommand"><a class="header" href="#non-interactive-review-cli-subcommand">Non-interactive review (CLI subcommand)</a></h3>
 <p><code>arc review</code> also works as a CLI subcommand — no REPL or interactive session needed. This makes it usable in CI pipelines, git hooks, and scripts:</p>
 <pre><code class="language-bash">arc review                   # review staged/unstaged changes
